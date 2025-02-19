@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import { sendData } from "../services/api";
+import {useNavigate} from "react-router-dom"
 
 const TourForm = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const TourForm = () => {
     duration: "",
     duration_unit: "hours",
   });
+  const navigate=useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,7 +25,7 @@ const TourForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const {
       tour_id,
       title,
@@ -33,8 +35,9 @@ const TourForm = () => {
       duration,
       duration_unit,
     } = formData;
-
+  
     const durationRegex = /^\d+$/;
+  
 
     if (!durationRegex.test(duration)) {
       toast.error("Enter number for duration", {
@@ -43,7 +46,7 @@ const TourForm = () => {
       });
       return;
     }
-
+  
     const data = {
       tour_id: Number(tour_id),
       title,
@@ -53,17 +56,23 @@ const TourForm = () => {
       duration,
       duration_unit,
     };
-
-    console.log("Sending data=>", data);
-
+  
     try {
-         await sendData(data)
-        .then(()=>{ toast.success("Details registered successfully", {
-            autoClose: 3000,
-            position: "top-center",
-           })})
-        
+      const res = await sendData(data); 
+      if (res) {
+        toast.success("Details registered successfully", {
+          autoClose: 3000,
+          position: "top-center",
+        });
+        navigate('/'); 
+      } else {
+        toast.error("Something went wrong. Please try again.", {
+          autoClose: 3000,
+          position: "top-center",
+        });
+      }
     } catch (error) {
+      // If an error occurs during the sendData API call
       console.log("Handle Submit error =>", error);
       toast.error(error.response?.data?.message || "Something went wrong", {
         autoClose: 3000,
@@ -71,10 +80,15 @@ const TourForm = () => {
       });
     }
   };
-
+  
   return (
-    <>
-      <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg border">
+    <div className=''>
+      <div className="formbtn mb-3 cursor-pointer">
+    <button className="bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 focus:outline-none" onClick={()=>navigate('/')}>
+              Show List
+        </button>
+    </div>
+      <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg border">
         <h2 className="text-2xl font-semibold text-center mb-6">Create Tour</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -214,7 +228,7 @@ const TourForm = () => {
         </form>
         <ToastContainer />
       </div>
-    </>
+    </div>
   );
 };
 
